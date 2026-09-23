@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  order-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+    container_name: order-app
+    ports:
+      - "8000:8000"
+    networks:
+      - monitoring-net
+
+  remediation-webhook:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.webhook
+    container_name: remediation-webhook
+    ports:
+      - "5001:5001"
+    environment:
+      - APP_SERVICE_URL=http://order-app:8000
+      - WEBHOOK_SECRET_TOKEN=selise-incident-secret-token
+      - DEMO_MODE=true
+    networks:
+      - monitoring-net
+
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./config/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    networks:
+      - monitoring-net
+
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./config/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./config/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-net
+
+networks:
+  monitoring-net:
+    driver: bridge

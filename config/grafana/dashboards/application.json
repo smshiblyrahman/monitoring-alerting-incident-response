@@ -1,0 +1,74 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "Application Request Rate (RPS)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"order-service\"}[1m])) by (status)",
+          "legendFormat": "HTTP {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "P95 and P50 Latency",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"order-service\"}[1m])) by (le))",
+          "legendFormat": "P95 Latency (s)",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"order-service\"}[1m])) by (le))",
+          "legendFormat": "P50 Latency (s)",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "HTTP 5xx Error Rate %",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"order-service\",status=~\"5..\"}[1m])) / sum(rate(http_requests_total{job=\"order-service\"}[1m])) * 100",
+          "legendFormat": "Error Rate %",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Service Up/Down State",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "up{job=\"order-service\"}",
+          "legendFormat": "Service Health",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["operations", "application", "selise"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Application Performance & SLOs",
+  "uid": "app-perf-dash",
+  "version": 1
+}

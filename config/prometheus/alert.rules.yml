@@ -1,0 +1,38 @@
+groups:
+  - name: application_alerts
+    rules:
+      - alert: ServiceDown
+        expr: up{job="order-service"} == 0
+        for: 5s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service order-service is down"
+          description: "Service has been unreachable for more than 5 seconds. Runbook: docs/runbooks/RUNBOOK_SERVICE_DOWN.md"
+
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{job="order-service",status=~"5.."}[30s])) / sum(rate(http_requests_total{job="order-service"}[30s])) > 0.05
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected on order-service"
+          description: "HTTP 5xx rate exceeds 5% of total traffic. Runbook: docs/runbooks/RUNBOOK_HIGH_ERROR_RATE.md"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="order-service"}[30s])) by (le)) > 1.0
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 latency exceeding 1.0s"
+          description: "P95 response latency exceeded 1 second for 10 seconds."
+
+      - alert: HighMemoryUsage
+        expr: app_simulated_memory_usage_bytes{job="order-service"} > 150000000
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Memory consumption above 150MB"
+          description: "Potential memory leak detected in application heap."

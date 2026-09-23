@@ -1,0 +1,37 @@
+{
+  "editable": true,
+  "panels": [
+    {
+      "title": "Active Database Connections",
+      "type": "stat",
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "app_active_connections{job=\"order-service\"}",
+          "legendFormat": "Connections",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Slow Query Operations (>500ms)",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{endpoint=\"/api/orders\"}[1m])) or vector(0)",
+          "legendFormat": "Query Ops/s",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["operations", "database"],
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Database Health & Connections",
+  "uid": "db-health-dash",
+  "version": 1
+}

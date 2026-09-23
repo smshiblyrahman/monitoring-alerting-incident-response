@@ -1,0 +1,49 @@
+{
+  "editable": true,
+  "panels": [
+    {
+      "title": "Host / Container CPU Usage Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(node_cpu_seconds_total{mode=\"user\"}[1m]) or vector(0.24)",
+          "legendFormat": "User CPU",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Simulated Memory Footprint (Bytes)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "app_simulated_memory_usage_bytes{job=\"order-service\"}",
+          "legendFormat": "App Memory Bytes",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Network Traffic Rate (Bytes In/Out)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(node_network_receive_bytes_total[1m]) or vector(10240)",
+          "legendFormat": "RX Bytes/sec",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["operations", "infra"],
+  "time": { "from": "now-15m", "to": "now" },
+  "title": "Infrastructure Metrics",
+  "uid": "infra-metrics-dash",
+  "version": 1
+}
